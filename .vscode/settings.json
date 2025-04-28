@@ -1,0 +1,22 @@
+{
+    "editor.tabSize": 4,
+    "editor.formatOnSave": true,
+    "editor.rulers": [
+        120
+    ],
+    "autopep8.args": [
+        "--max-line-length=120"
+    ],
+    "command-runner.terminal.name": "runCommand",
+    "command-runner.commands": {
+        "run camera": "python camera/main.py",
+        "run station": "python station/main.py",
+        "run gas nozzle": "python gas_nozzle/main.py",
+        "run bank server": "python bank_server/main.py",
+        "run bank viewer": "python bank_viewer/main.py",
+        "run fast": "python fast.py",
+    },
+    "files.exclude": {
+        "**/__pycache__": true
+    },
+}

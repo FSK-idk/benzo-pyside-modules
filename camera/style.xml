@@ -1,0 +1,21 @@
+QWidget {
+    background-color:rgb(255, 255, 255);
+}
+
+QPushButton {
+    border: 3px solid rgb(255, 255, 255);
+    color: rgb(0,0,0);
+    background-color: rgba(255, 180, 0, 0.2);
+}
+
+QPushButton:pressed {
+    background-color:rgba(255, 180, 0, 0.5);
+}
+
+QPushButton:flat {
+    border: none; /* no border for a flat push button */
+}
+
+QPushButton:default {
+    border-color: navy; /* make the default button prominent */
+}

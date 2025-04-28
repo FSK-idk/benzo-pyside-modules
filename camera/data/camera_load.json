@@ -1,0 +1,184 @@
+{
+    "CameraLoad": [
+        {
+            "date_time": "28.11.2020",
+            "car_number": "А001АА01",
+            "image_filename": "А001АА01.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "28.11.2020",
+            "car_number": "А001АА40",
+            "image_filename": "А001АА40.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "28.11.2020",
+            "car_number": "А077ЕН142",
+            "image_filename": "А077ЕН142.jpg",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "28.11.2020",
+            "car_number": "А149НЕ763",
+            "image_filename": "А149НЕ763.jpg",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "29.11.2020",
+            "car_number": "А317ВО116",
+            "image_filename": "А317ВО116.jpg",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "29.11.2020",
+            "car_number": "А744АА02",
+            "image_filename": "А744АА02.jpg",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "29.11.2020",
+            "car_number": "А888ОК55",
+            "image_filename": "А888ОК55.jpg",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "29.11.2020",
+            "car_number": "А999АА777",
+            "image_filename": "А999АА777.jpg",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "30.11.2020",
+            "car_number": "В333ВВ43",
+            "image_filename": "В333ВВ43.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "30.11.2020",
+            "car_number": "Е008ЕЕ77",
+            "image_filename": "Е008ЕЕ77.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "30.11.2020",
+            "car_number": "Е969УТ197",
+            "image_filename": "Е969УТ197.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "30.11.2020",
+            "car_number": "М640РВ72",
+            "image_filename": "М640РВ72.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "01.12.2020",
+            "car_number": "Н888РУ150",
+            "image_filename": "Н888РУ150.jpg",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "01.12.2020",
+            "car_number": "Н952НВ777",
+            "image_filename": "Н952НВ777.jpeg",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "28.11.2020",
+            "car_number": null,
+            "image_filename": "не распознан.png",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "28.11.2020",
+            "car_number": null,
+            "image_filename": "не распознан_1.jpg",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "29.11.2020",
+            "car_number": null,
+            "image_filename": "не распознан_2.jpg",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "29.11.2020",
+            "car_number": null,
+            "image_filename": "не распознан_3.jpg",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "30.11.2020",
+            "car_number": null,
+            "image_filename": "не распознан_4.jpg",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "30.11.2020",
+            "car_number": null,
+            "image_filename": "не распознан_5.jpg",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "01.12.2020",
+            "car_number": null,
+            "image_filename": "не распознан_6.jpg",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "01.12.2020",
+            "car_number": null,
+            "image_filename": "не распознан_7.jpg",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "02.12.2020",
+            "car_number": null,
+            "image_filename": "не распознан_8.jpg",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "02.12.2020",
+            "car_number": null,
+            "image_filename": "не распознан_9.jpg",
+            "is_recognized": "false"
+        },
+        {
+            "date_time": "01.12.2020",
+            "car_number": "О007ОО77",
+            "image_filename": "О007ОО77.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "01.12.2020",
+            "car_number": "О999ОО77",
+            "image_filename": "О999ОО77.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "02.12.2020",
+            "car_number": "С001АС777",
+            "image_filename": "С001АС777.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "02.12.2020",
+            "car_number": "Т777ТТ71",
+            "image_filename": "Т777ТТ71.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "02.12.2020",
+            "car_number": "Х007АМ97",
+            "image_filename": "Х007АМ97.png",
+            "is_recognized": "true"
+        },
+        {
+            "date_time": "02.12.2020",
+            "car_number": "Х082МК125",
+            "image_filename": "Х082МК125.png",
+            "is_recognized": "true"
+        }
+    ]
+}
