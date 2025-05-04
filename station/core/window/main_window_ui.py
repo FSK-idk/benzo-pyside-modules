@@ -10,6 +10,7 @@ from core.widget.finish_screen.finish_screen import FinishScreen
 from core.widget.camera_use_screen.camera_use_screen import CameraUseScreen
 from core.widget.gas_nozzle_use_screen.gas_nozzle_use_screen import GasNozzleUseScreen
 from core.widget.waiting_screen.waiting_screen import WaitingScreen
+from core.widget.reconnection_screen.reconnection_screen import ReconnectionScreen
 
 
 class ViewName(Enum):
@@ -23,6 +24,7 @@ class ViewName(Enum):
     GAS_NOZZLE_USE = 'gas_nozzle_use_screen'
 
     WAITING = 'waiting_screen'
+    RECONNECTION = 'reconnection_screen'
 
 
 class MainWindowUI(QMainWindow):
@@ -40,6 +42,7 @@ class MainWindowUI(QMainWindow):
         self.camera_use_screen: CameraUseScreen = CameraUseScreen(self)
         self.gas_nozzle_use_screen: GasNozzleUseScreen = GasNozzleUseScreen(self)
         self.waiting_screen: WaitingScreen = WaitingScreen(self)
+        self.reconnection_screen: ReconnectionScreen = ReconnectionScreen(self)
 
         self.stack: QStackedWidget = QStackedWidget()
 
@@ -52,6 +55,7 @@ class MainWindowUI(QMainWindow):
             ViewName.CAMERA_USE: self.stack.addWidget(self.camera_use_screen.ui),
             ViewName.GAS_NOZZLE_USE: self.stack.addWidget(self.gas_nozzle_use_screen.ui),
             ViewName.WAITING: self.stack.addWidget(self.waiting_screen.ui),
+            ViewName.RECONNECTION: self.stack.addWidget(self.reconnection_screen.ui),
         }
 
         self.setCentralWidget(self.stack)

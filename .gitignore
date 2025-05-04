@@ -2,3 +2,4 @@
 __pycache__
 .devdbrc
 data_base.sqlite
+tests

@@ -4,8 +4,9 @@ from core.window.main_window_ui import MainWindowUI, ViewName
 
 from core.model.camera_load import CameraLoad
 from core.model.car_number import CarNumber
+from core.model.station_ws_api import CarNumberSentMessage
 
-from core.net.client import Client
+from core.net.station_ws_client import StationWsClient
 
 from core.data_base.data_base import data_base
 
@@ -30,19 +31,18 @@ class MainWindow(QObject):
 
         self.ui.setCurrentView(ViewName.WAITING)
 
-        self.client: Client = Client(self)
+        self.station_ws_client: StationWsClient = StationWsClient(self)
 
-        self.client.connected.connect(self.onConnected)
-        self.client.disconnected.connect(self.onDisconnected)
-        self.client.startService.connect(self.onStartService)
-        self.client.resetService.connect(self.onResetService)
-        self.client.carNumberReceived.connect(self.onCarNumberReceived)
-        self.client.startGasNozzle.connect(self.onStartGasNozzle)
-        self.client.gasNozzleFinished.connect(self.onGasNozzleFinished)
-        self.client.cameraConnected.connect(self.onCameraConnected)
-        self.client.gasNozzleDisconnected.connect(self.onGasNozzleDisconnected)
+        self.station_ws_client.connected.connect(self.onStationConnected)
+        self.station_ws_client.disconnected.connect(self.onStationDisconnected)
+        self.station_ws_client.gasNozzleDisconnected.connect(self.onGasNozzleDisconnected)
+        self.station_ws_client.startService.connect(self.onStartService)
+        self.station_ws_client.resetService.connect(self.onResetService)
+        self.station_ws_client.startStation.connect(self.onStartStation)
+        self.station_ws_client.startGasNozzle.connect(self.onStartGasNozzle)
+        self.station_ws_client.finishGasNozzle.connect(self.onFinishGasNozzle)
 
-        self.client.startClient()
+        self.station_ws_client.start()
 
         self.ui.show()
 
@@ -52,13 +52,19 @@ class MainWindow(QObject):
         self.ui.recognition_screen.clearInput()
         self.ui.non_recognition_screen.clearInput()
 
+    # ui
+
     @Slot()
-    def onStartClicked(self):
-        self.client.sendStartService()
+    def onReconnectClicked(self) -> None:
+        self.station_ws_client.start()
+
+    @Slot()
+    def onStartClicked(self) -> None:
+        self.station_ws_client.sendStartServiceRequest()
 
     @Slot()
     def onCancelRefuelingClicked(self) -> None:
-        self.client.sendResetService()
+        self.station_ws_client.sendResetServiceRequest()
 
     @Slot()
     def onImageSelected(self, load: CameraLoad | None) -> None:
@@ -77,19 +83,22 @@ class MainWindow(QObject):
     @Slot()
     def onConfirmClicked(self, car_number: CarNumber) -> None:
         self.clearInput()
-        self.client.sendCarNumberReceived(car_number)
+        message = CarNumberSentMessage(car_number=car_number)
+        self.station_ws_client.sendCarNumberSent(message)
+
+    # station ws client
 
     @Slot()
-    def onReconnectClicked(self) -> None:
-        self.client.startClient()
+    def onStationConnected(self) -> None:
+        self.ui.setCurrentView(ViewName.WAITING)
 
     @Slot()
-    def onConnected(self) -> None:
-        self.client.sendConnect()
-
-    @Slot()
-    def onDisconnected(self) -> None:
+    def onStationDisconnected(self) -> None:
         self.ui.setCurrentView(ViewName.RECONNECTION)
+
+    @Slot()
+    def onGasNozzleDisconnected(self) -> None:
+        self.ui.setCurrentView(ViewName.WAITING)
 
     @Slot()
     def onStartService(self) -> None:
@@ -101,7 +110,7 @@ class MainWindow(QObject):
         self.ui.setCurrentView(ViewName.START)
 
     @Slot()
-    def onCarNumberReceived(self, car_number: CarNumber) -> None:
+    def onStartStation(self) -> None:
         self.ui.setCurrentView(ViewName.STATION_USE)
 
     @Slot()
@@ -109,13 +118,5 @@ class MainWindow(QObject):
         self.ui.setCurrentView(ViewName.GAS_NOZZLE_USE)
 
     @Slot()
-    def onGasNozzleFinished(self) -> None:
+    def onFinishGasNozzle(self) -> None:
         self.ui.setCurrentView(ViewName.STATION_USE)
-
-    @Slot()
-    def onCameraConnected(self) -> None:
-        self.ui.setCurrentView(ViewName.WAITING)
-
-    @Slot()
-    def onGasNozzleDisconnected(self) -> None:
-        self.ui.setCurrentView(ViewName.WAITING)

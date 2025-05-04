@@ -8,16 +8,14 @@ from core.model.camera_load import CameraLoad
 
 from core.data_base.query import Query
 
-from core.util import resource_path
-
 
 class DataBase(QObject):
     def init(self) -> None:
-        if not os.path.isdir(resource_path('data/')):
-            os.mkdir(resource_path('data/'))
+        if not os.path.isdir('data/'):
+            os.mkdir('data/')
 
         self.data_base: QSqlDatabase = QSqlDatabase('QSQLITE')
-        self.data_base.setDatabaseName(resource_path('data/data_base.sqlite'))
+        self.data_base.setDatabaseName('data/data_base.sqlite')
         self.data_base.open()
 
         query: QSqlQuery = QSqlQuery(self.data_base)
