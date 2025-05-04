@@ -20,11 +20,6 @@ class FuelSelectionScreen(QObject):
 
         self.ui: FuelSelectionScreenUI = FuelSelectionScreenUI(parent)
 
-        self.ui.fuel_type_combo_box.addItem(FuelType.FT_92.value)
-        self.ui.fuel_type_combo_box.addItem(FuelType.FT_95.value)
-        self.ui.fuel_type_combo_box.addItem(FuelType.FT_98.value)
-        self.ui.fuel_type_combo_box.addItem(FuelType.FT_DT.value)
-
         self.ui.fuel_amount_spin_box.setMaximum(MAX_FUEL_AMOUNT)
 
         self.ui.fuel_type_combo_box.currentIndexChanged.connect(self.onFuelTypeChanged)
@@ -35,24 +30,22 @@ class FuelSelectionScreen(QObject):
         self.ui.cancel_refueling_button.clicked.connect(self.cancelRefuelingClicked.emit)
 
         self._price: int = 0
-        self._fuel_price_data: FuelPriceData = FuelPriceData(
-            price={
-                FuelType.FT_92: 5962,
-                FuelType.FT_95: 6153,
-                FuelType.FT_98: 7680,
-                FuelType.FT_DT: 7628,
-            }
-        )
-
-        self.onFuelTypeChanged()
+        self._fuel_price_data: FuelPriceData = FuelPriceData(price={})
 
         self.ui.show()
 
     def setFuelPriceData(self, fuel_price_data: FuelPriceData) -> None:
         self._fuel_price_data = fuel_price_data
 
+        self.ui.fuel_type_combo_box.clear()
+        self.ui.fuel_type_combo_box.setCurrentText('')
+        for k, v in self._fuel_price_data.price.items():
+            self.ui.fuel_type_combo_box.addItem(k.value)
+
+        self.onFuelTypeChanged()
+
     def clearInput(self) -> None:
-        self.ui.fuel_type_combo_box.setCurrentIndex(0)
+        self.setFuelPriceData(FuelPriceData(price={}))
         self.ui.fuel_amount_spin_box.setValue(0)
         self.ui.payment_amount_spin_box.setValue(0)
 
@@ -63,15 +56,9 @@ class FuelSelectionScreen(QObject):
         self.onFuelAmountChanged()
 
     def onFuelTypeChanged(self) -> None:
-        match FuelType(self.ui.fuel_type_combo_box.currentText()):
-            case FuelType.FT_92:
-                self.setCurrentPrice(self._fuel_price_data.price[FuelType.FT_92])
-            case FuelType.FT_95:
-                self.setCurrentPrice(self._fuel_price_data.price[FuelType.FT_95])
-            case FuelType.FT_98:
-                self.setCurrentPrice(self._fuel_price_data.price[FuelType.FT_98])
-            case FuelType.FT_DT:
-                self.setCurrentPrice(self._fuel_price_data.price[FuelType.FT_DT])
+        if (self.ui.fuel_type_combo_box.currentText() != ''):
+            fuel_type = FuelType(self.ui.fuel_type_combo_box.currentText())
+            self.setCurrentPrice(self._fuel_price_data.price[fuel_type])
 
     def onFuelAmountChanged(self) -> None:
         fuel_amount = self.ui.fuel_amount_spin_box.value()

@@ -1,3 +1,4 @@
+from email import message
 import json
 
 from PySide6.QtCore import QObject, QUrl, Slot, Signal
@@ -14,6 +15,7 @@ class CentralServerWsClient(QObject):
 
     stationNotTaken: Signal = Signal()
     stationTakenOffline: Signal = Signal()
+    fuelPriceDataSent: Signal = Signal(FuelPriceDataSentMessage)
     loyaltyCardSent: Signal = Signal(LoyaltyCardSentMessage)
     paymentReceived: Signal = Signal()
 
@@ -54,6 +56,10 @@ class CentralServerWsClient(QObject):
         message = StationTakenOfflineRequestMessage()
         self._client.sendTextMessage(message.to_json())
 
+    def sendFuelPriceDataAsk(self) -> None:
+        message = FuelPriceDataAskMessage()
+        self._client.sendTextMessage(message.to_json())
+
     def sendLoyaltyCardAsk(self, message: LoyaltyCardAskMessage) -> None:
         self._client.sendTextMessage(message.to_json())
 
@@ -73,6 +79,9 @@ class CentralServerWsClient(QObject):
                 self.stationNotTaken.emit()
             case MessageType.STATION_TAKEN_OFFLINE:
                 self.stationTakenOffline.emit()
+            case MessageType.FUEL_PRICE_DATA_SENT:
+                message = FuelPriceDataSentMessage.from_json(json_str)
+                self.fuelPriceDataSent.emit(message)
             case MessageType.LOYALTY_CARD_SENT:
                 message = LoyaltyCardSentMessage.from_json(json_str)
                 self.loyaltyCardSent.emit(message)

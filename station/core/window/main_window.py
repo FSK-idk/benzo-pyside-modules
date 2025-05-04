@@ -7,7 +7,7 @@ from core.model.fuel_type import FuelType
 from core.widget.fuel_selection_screen.fuel_selection_screen import FuelSelectionData
 from core.model.payment_selection_data import PaymentSelectionData
 
-from core.model.central_server_ws_api import LoyaltyCardAskMessage, LoyaltyCardSentMessage, PaymentSentMessage
+from core.model.central_server_ws_api import LoyaltyCardAskMessage, FuelPriceDataSentMessage, LoyaltyCardSentMessage, PaymentSentMessage
 from core.model.station_ws_api import CarNumberSentMessage, CarNumberReceivedMessage
 from core.model.bank_http_api import PayRequest, PayResponse
 
@@ -37,6 +37,7 @@ class MainWindow(QObject):
         self.central_server_ws_client.disconnected.connect(self.onCentralServerDisconnected)
         self.central_server_ws_client.stationNotTaken.connect(self.onStationNotTaken)
         self.central_server_ws_client.stationTakenOffline.connect(self.onStationTakenOffline)
+        self.central_server_ws_client.fuelPriceDataSent.connect(self.onFuelPriceDataSent)
         self.central_server_ws_client.loyaltyCardSent.connect(self.onLoyaltyCardSent)
         self.central_server_ws_client.paymentReceived.connect(self.onPaymentReceived)
 
@@ -47,6 +48,8 @@ class MainWindow(QObject):
         self.station_ws_server.resetServiceRequest.connect(self.onResetServiceRequest)
         self.station_ws_server.resetService.connect(self.onResetService)
         self.station_ws_server.startServiceRequest.connect(self.onStartServiceRequest)
+        self.station_ws_server.cancelRefuelingRequest.connect(self.onCancelRefuelingRequest)
+        self.station_ws_server.cancelRefueling.connect(self.onCancelRefueling)
         self.station_ws_server.carNumberSent.connect(self.onCarNumberSent)
         self.station_ws_server.carNumberReceived.connect(self.onCarNumberReceived)
         self.station_ws_server.startGasNozzleRequest.connect(self.onStartGasNozzleRequest)
@@ -65,6 +68,9 @@ class MainWindow(QObject):
         self._payment_amount: int | None = None
         self._payment_key: str | None = None
         self._used_bonuses: int | None = None
+
+        self._fuel_price_data_updated = False
+        self._loyalty_card_updated = False
 
         self.ui.setCurrentView(ViewName.WAITING)
         self.central_server_ws_client.start()
@@ -175,6 +181,12 @@ class MainWindow(QObject):
         self.station_ws_server.sendStartService()
 
     @Slot()
+    def onFuelPriceDataSent(self, message: FuelPriceDataSentMessage) -> None:
+        self.ui.fuel_selection_screen.setFuelPriceData(message.fuel_price_data)
+        self._fuel_price_data_updated = True
+        self.trySetFuelSelectionScreen()
+
+    @Slot()
     def onLoyaltyCardSent(self, message: LoyaltyCardSentMessage) -> None:
         if (message.loyalty_card_available):
             if (message.loyalty_card_holder is None):
@@ -186,7 +198,13 @@ class MainWindow(QObject):
                 self.ui.payment_selection_screen.setCurrentBonuses(message.loyalty_card_bonuses)
                 self.ui.payment_selection_screen.showLoyaltyCardForm()
 
-        self.ui.setCurrentView(ViewName.FUEL_SELECTION)
+        self._loyalty_card_updated = True
+        self.trySetFuelSelectionScreen()
+
+    @Slot()
+    def trySetFuelSelectionScreen(self) -> None:
+        if (self._fuel_price_data_updated and self._loyalty_card_updated):
+            self.ui.setCurrentView(ViewName.FUEL_SELECTION)
 
     @Slot()
     def onPaymentReceived(self) -> None:
@@ -217,6 +235,14 @@ class MainWindow(QObject):
         self.central_server_ws_client.sendStationTakenOfflineRequest()
 
     @Slot()
+    def onCancelRefuelingRequest(self) -> None:
+        self.station_ws_server.sendCancelRefueling()
+
+    @Slot()
+    def onCancelRefueling(self) -> None:
+        self.ui.setCurrentView(ViewName.FINISH)
+
+    @Slot()
     def onCarNumberSent(self, message: CarNumberSentMessage) -> None:
         new_message = CarNumberReceivedMessage(car_number=message.car_number)
         self.station_ws_server.sendCarNumberReceived(new_message)
@@ -227,6 +253,7 @@ class MainWindow(QObject):
         self._car_number = message.car_number
         new_message = LoyaltyCardAskMessage(car_number=self._car_number)
         self.central_server_ws_client.sendLoyaltyCardAsk(new_message)
+        self.central_server_ws_client.sendFuelPriceDataAsk()
 
     @Slot()
     def onStartGasNozzleRequest(self) -> None:

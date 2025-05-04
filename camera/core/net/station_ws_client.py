@@ -15,6 +15,7 @@ class StationWsClient(QObject):
 
     startService: Signal = Signal()
     resetService: Signal = Signal()
+    cancelRefueling: Signal = Signal()
     startStation: Signal = Signal()
     startGasNozzle: Signal = Signal()
     finishGasNozzle: Signal = Signal()
@@ -51,8 +52,8 @@ class StationWsClient(QObject):
         message = StartServiceRequestMessage()
         self._client.sendTextMessage(message.to_json())
 
-    def sendResetServiceRequest(self) -> None:
-        message = ResetServiceRequestMessage()
+    def sendCancelRefuelingRequest(self) -> None:
+        message = CancelRefuelingRequestMessage()
         self._client.sendTextMessage(message.to_json())
 
     def sendCarNumberSent(self, message: CarNumberSentMessage) -> None:
@@ -73,6 +74,8 @@ class StationWsClient(QObject):
                 self.startService.emit()
             case MessageType.RESET_SERVICE:
                 self.resetService.emit()
+            case MessageType.CANCEL_REFUELING:
+                self.cancelRefueling.emit()
             case MessageType.START_STATION:
                 self.startStation.emit()
             case MessageType.START_GAS_NOZZLE:

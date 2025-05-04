@@ -38,6 +38,7 @@ class MainWindow(QObject):
         self.station_ws_client.gasNozzleDisconnected.connect(self.onGasNozzleDisconnected)
         self.station_ws_client.startService.connect(self.onStartService)
         self.station_ws_client.resetService.connect(self.onResetService)
+        self.station_ws_client.cancelRefueling.connect(self.onCancelRefueling)
         self.station_ws_client.startStation.connect(self.onStartStation)
         self.station_ws_client.startGasNozzle.connect(self.onStartGasNozzle)
         self.station_ws_client.finishGasNozzle.connect(self.onFinishGasNozzle)
@@ -64,7 +65,7 @@ class MainWindow(QObject):
 
     @Slot()
     def onCancelRefuelingClicked(self) -> None:
-        self.station_ws_client.sendResetServiceRequest()
+        self.station_ws_client.sendCancelRefuelingRequest()
 
     @Slot()
     def onImageSelected(self, load: CameraLoad | None) -> None:
@@ -108,6 +109,10 @@ class MainWindow(QObject):
     def onResetService(self) -> None:
         self.clearInput()
         self.ui.setCurrentView(ViewName.START)
+
+    @Slot()
+    def onCancelRefueling(self) -> None:
+        self.ui.setCurrentView(ViewName.STATION_USE)
 
     @Slot()
     def onStartStation(self) -> None:

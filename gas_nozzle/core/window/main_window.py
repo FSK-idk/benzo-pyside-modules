@@ -25,6 +25,7 @@ class MainWindow(QObject):
         self.station_ws_client.cameraDisconnected.connect(self.onCameraDisconnected)
         self.station_ws_client.resetService.connect(self.onResetService)
         self.station_ws_client.startStation.connect(self.onStartStation)
+        self.station_ws_client.cancelRefueling.connect(self.onCancelRefueling)
         self.station_ws_client.startGasNozzle.connect(self.onStartGasNozzle)
         self.station_ws_client.finishGasNozzle.connect(self.onFinishGasNozzle)
 
@@ -74,6 +75,10 @@ class MainWindow(QObject):
     def onResetService(self) -> None:
         self.clearInput()
         self.ui.setCurrentView(ViewName.CAMERA_USE)
+
+    @Slot()
+    def onCancelRefueling(self) -> None:
+        self.ui.setCurrentView(ViewName.STATION_USE)
 
     @Slot()
     def onStartStation(self) -> None:

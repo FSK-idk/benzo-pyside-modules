@@ -18,6 +18,8 @@ class StationWsServer(QObject):
     startServiceRequest: Signal = Signal()
     resetServiceRequest: Signal = Signal()
     resetService: Signal = Signal()
+    cancelRefuelingRequest: Signal = Signal()
+    cancelRefueling: Signal = Signal()
     carNumberSent: Signal = Signal(CarNumberSentMessage)
     carNumberReceived: Signal = Signal(CarNumberReceivedMessage)
     startGasNozzleRequest: Signal = Signal()
@@ -62,7 +64,6 @@ class StationWsServer(QObject):
 
         self._server.close()
 
-# TODO
     def sendStartService(self) -> None:
         message = StartServiceMessage()
         self.sendToAll(message.to_json())
@@ -73,6 +74,14 @@ class StationWsServer(QObject):
     def sendResetService(self) -> None:
         self.resetService.emit()
         message = ResetServiceMessage()
+        self.sendToAll(message.to_json())
+
+    def sendCancelRefuelingRequest(self) -> None:
+        self.cancelRefuelingRequest.emit()
+
+    def sendCancelRefueling(self) -> None:
+        self.cancelRefueling.emit()
+        message = CancelRefuelingMessage()
         self.sendToAll(message.to_json())
 
     def sendCarNumberReceived(self, message: CarNumberReceivedMessage) -> None:
@@ -137,6 +146,8 @@ class StationWsServer(QObject):
                 self.resetService.emit()
             case MessageType.RESET_SERVICE:
                 self.resetService.emit()
+            case MessageType.CANCEL_REFUELING_REQUEST:
+                self.cancelRefuelingRequest.emit()
             case MessageType.CAR_NUMBER_SENT:
                 message = CarNumberSentMessage.from_json(json_str)
                 self.carNumberSent.emit(message)

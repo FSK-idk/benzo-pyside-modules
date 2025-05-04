@@ -15,6 +15,7 @@ class StationWsClient(QObject):
 
     resetService: Signal = Signal()
     startStation: Signal = Signal()
+    cancelRefueling: Signal = Signal()
     startGasNozzle: Signal = Signal()
     finishGasNozzle: Signal = Signal()
 
@@ -63,6 +64,8 @@ class StationWsClient(QObject):
                 self.cameraDisconnected.emit()
             case MessageType.RESET_SERVICE:
                 self.resetService.emit()
+            case MessageType.CANCEL_REFUELING:
+                self.cancelRefueling.emit()
             case MessageType.START_STATION:
                 self.startStation.emit()
             case MessageType.START_GAS_NOZZLE:

@@ -17,6 +17,8 @@ class MessageType(Enum):
     START_SERVICE = 'start_service'
     RESET_SERVICE_REQUEST = 'reset_service_request'
     RESET_SERVICE = 'reset_service'
+    CANCEL_REFUELING_REQUEST = 'cancel_refueling_request'
+    CANCEL_REFUELING = 'cancel_refueling'
     CAR_NUMBER_SENT = 'car_number_sent'
     CAR_NUMBER_RECEIVED = 'car_number_received'
     START_STATION = 'start_station'
@@ -222,6 +224,52 @@ class ResetServiceRequestMessage:
 @dataclass
 class ResetServiceMessage:
     message_type: ClassVar[MessageType] = MessageType.RESET_SERVICE
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        if data_dict['message_type'] == cls.message_type.value:
+            return cls()
+        raise ValueError('message_type is invalid')
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> dict:
+        return {
+            'message_type': self.message_type.value,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass
+class CancelRefuelingRequestMessage:
+    message_type: ClassVar[MessageType] = MessageType.CANCEL_REFUELING_REQUEST
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        if data_dict['message_type'] == cls.message_type.value:
+            return cls()
+        raise ValueError('message_type is invalid')
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> dict:
+        return {
+            'message_type': self.message_type.value,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass
+class CancelRefuelingMessage:
+    message_type: ClassVar[MessageType] = MessageType.CANCEL_REFUELING
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
