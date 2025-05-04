@@ -85,6 +85,9 @@ class MainWindow(QObject):
         self._payment_key = None
         self._used_bonuses = None
 
+        self._fuel_price_data_updated = False
+        self._loyalty_card_updated = False
+
         self.ui.fuel_selection_screen.clearInput()
         self.ui.payment_selection_screen.clearInput()
 
