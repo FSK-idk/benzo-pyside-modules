@@ -13,9 +13,15 @@ def main() -> None:
     load_dotenv('.env')
 
     app = QApplication()
-    app.setApplicationDisplayName("proj-station")
+    app.setApplicationDisplayName("floating")
 
-    window: MainWindow = MainWindow()
+    app.setStyleSheet("""
+        QWidget {
+            background: #ffffff;
+        }
+    """)
+
+    window = MainWindow()
 
     app.exec()
 

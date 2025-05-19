@@ -13,13 +13,15 @@ def main() -> None:
     load_dotenv('.env')
 
     app = QApplication()
-    app.setApplicationDisplayName('proj-camera')
+    app.setApplicationDisplayName('floating')
 
-    # with open('style.xml', 'r') as file:
-    #     data = file.read()
-    #     app.setStyleSheet(data)
+    app.setStyleSheet("""
+        QWidget {
+            background: #ffffff;
+        }
+    """)
 
-    window: MainWindow = MainWindow()
+    window = MainWindow()
 
     app.exec()
 

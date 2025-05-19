@@ -16,8 +16,6 @@ class MainWindow(QObject):
         self.ui.finish_screen.confirmClicked.connect(self.onConfirmClicked)
         self.ui.reconnection_screen.reconnectClicked.connect(self.onReconnectClicked)
 
-        self.ui.setCurrentView(ViewName.WAITING)
-
         self.station_ws_client: StationWsClient = StationWsClient(self)
 
         self.station_ws_client.connected.connect(self.onStationConnected)
@@ -29,6 +27,7 @@ class MainWindow(QObject):
         self.station_ws_client.startGasNozzle.connect(self.onStartGasNozzle)
         self.station_ws_client.finishGasNozzle.connect(self.onFinishGasNozzle)
 
+        self.ui.setCurrentView(ViewName.WAITING)
         self.station_ws_client.start()
 
         self.ui.show()

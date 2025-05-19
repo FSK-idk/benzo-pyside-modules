@@ -14,8 +14,15 @@ def main() -> None:
 
     app = QApplication()
     app.setApplicationDisplayName('floating')
+    app.setStyle('Windows')
 
-    window: MainWindow = MainWindow()
+    app.setStyleSheet("""
+        QWidget {
+            background: #ffffff;
+        }
+    """)
+
+    window = MainWindow()
 
     app.exec()
 

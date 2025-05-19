@@ -1,5 +1,6 @@
 import os
 import sys
+import sass
 
 from dotenv import load_dotenv
 
@@ -12,9 +13,15 @@ def main() -> None:
     load_dotenv('.env')
 
     app = QApplication()
-    app.setApplicationDisplayName('proj-camera')
+    app.setApplicationDisplayName('floating')
 
-    window: MainWindow = MainWindow()
+    app.setStyleSheet("""
+        QWidget {
+            background: #ffffff;
+        }
+    """)
+
+    window = MainWindow()
 
     app.exec()
 

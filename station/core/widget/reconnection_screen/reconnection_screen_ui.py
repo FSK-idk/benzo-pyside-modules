@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
-from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
+
+from core.style import qss
 
 
 class ReconnectionScreenUI(QWidget):
@@ -9,18 +10,17 @@ class ReconnectionScreenUI(QWidget):
 
         self.title_label: QLabel = QLabel(self)
         self.title_label.setText('Нет подключения к центральному серверу')
-        self.title_label.setFont(QFont('Noto Sans', 30))
-        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.title_label.setStyleSheet(qss.colored_title)
 
         self.retry_button: QPushButton = QPushButton(self)
-        self.retry_button.setFixedSize(360, 80)
         self.retry_button.setText('Повторить')
-        self.retry_button.setFont(QFont('Noto Sans', 24))
+        self.retry_button.setFixedSize(250, 60)
         self.retry_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.retry_button.setStyleSheet(qss.colored_button)
 
-        main_layout: QVBoxLayout = QVBoxLayout()
+        main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.setContentsMargins(50, 50, 50, 50)
+        main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.addStretch()
         main_layout.addWidget(
             self.title_label,
@@ -33,3 +33,4 @@ class ReconnectionScreenUI(QWidget):
         )
 
         self.setLayout(main_layout)
+        self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)

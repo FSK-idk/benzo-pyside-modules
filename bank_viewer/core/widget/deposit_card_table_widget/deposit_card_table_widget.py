@@ -24,10 +24,10 @@ class DepositCardTableWidget(QTableView):
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
 
         self.verticalHeader().hide()
+        self.horizontalHeader().setMinimumSectionSize(40)
+
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 

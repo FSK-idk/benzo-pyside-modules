@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
-from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
+
+from core.style import qss
 
 
 class WaitingScreenUI(QWidget):
@@ -9,15 +10,15 @@ class WaitingScreenUI(QWidget):
 
         self.title_label: QLabel = QLabel(self)
         self.title_label.setText('Подключите все компоненты системы')
-        self.title_label.setFont(QFont('Noto Sans', 30))
-        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.title_label.setStyleSheet(qss.colored_title)
 
-        main_layout: QVBoxLayout = QVBoxLayout()
+        main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.setContentsMargins(50, 50, 50, 50)
+        main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.addWidget(
             self.title_label,
             alignment=Qt.AlignmentFlag.AlignHCenter,
         )
 
         self.setLayout(main_layout)
+        self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)

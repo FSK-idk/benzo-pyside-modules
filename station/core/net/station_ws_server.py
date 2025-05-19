@@ -135,6 +135,14 @@ class StationWsServer(QObject):
 
                 if (self._station_client.inv.get(message.sender_type) is None):
                     self._station_client[client] = message.sender_type
+                    match message.sender_type:
+                        case SenderType.CAMERA:
+                            message = CameraConnectedMessage()
+                            client.sendTextMessage(message.to_json())
+                        case SenderType.GAS_NOZZLE:
+                            message = GasNozzleConnectedMessage()
+                            client.sendTextMessage(message.to_json())
+
                     if (None not in [self._station_client.inv.get(SenderType.CAMERA), self._station_client.inv.get(SenderType.GAS_NOZZLE)]):
                         self.sendResetServiceRequest()
                 else:
