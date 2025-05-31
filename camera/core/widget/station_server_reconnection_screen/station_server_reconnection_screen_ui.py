@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt
 from core.style import qss
 
 
-class ReconnectionScreenUI(QWidget):
+class StationServerReconnectionScreenUI(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 

@@ -7,25 +7,28 @@ from core.model.car_number import CarNumber
 
 
 class MessageType(Enum):
-    CONNECT_REQUEST = 'connect_request'
-    CAMERA_CONNECTED = 'camera_connected'
-    CAMERA_DISCONNECTED = 'camera_disconnceted'
-    GAS_NOZZLE_CONNECTED = 'gas_nozzle_connected'
-    GAS_NOZZLE_DISCONNECTED = 'gas_nozzle_disconnected'
-
-    START_SERVICE_REQUEST = 'start_service_request'
+    CONNECT = 'connect'
+    CONNECTED = 'connected'
+    SERVICE_READY = 'service_ready'
+    SERVICE_NOT_READY = 'service_not_ready'
     START_SERVICE = 'start_service'
-    RESET_SERVICE_REQUEST = 'reset_service_request'
-    RESET_SERVICE = 'reset_service'
-    CANCEL_REFUELING_REQUEST = 'cancel_refueling_request'
+    SERVICE_STARTED = 'service_started'
+    END_SERVICE = 'end_service'
+    SERVICE_ENDED = 'service_ended'
     CANCEL_REFUELING = 'cancel_refueling'
-    CAR_NUMBER_SENT = 'car_number_sent'
-    CAR_NUMBER_RECEIVED = 'car_number_received'
-    START_STATION = 'start_station'
-    START_GAS_NOZZLE_REQUEST = 'start_gas_nozzle_request'
-    START_GAS_NOZZLE = 'start_gas_nozzle'
-    FINISH_GAS_NOZZLE_REQUEST = 'finish_gas_nozzle_request'
-    FINISH_GAS_NOZZLE = 'finish_gas_nozzle'
+    REFUELING_CANCELED = 'refueling_canceled'
+    USE_STATION_T1 = 'use_station_t1'
+    STATION_USED_T1 = 'station_used_t1'
+    USE_STATION_T2 = 'use_station_t2'
+    STATION_USED_T2 = 'station_used_t2'
+    USE_GAS_NOZZLE_T1 = 'use_gas_nozzle_t1'
+    GAS_NOZZLE_USED_T1 = 'gas_nozzle_used_t1'
+    USE_GAS_NOZZLE_T2 = 'use_gas_nozzle_t2'
+    GAS_NOZZLE_USED_T2 = 'gas_nozzle_used_t2'
+    USE_MOBILE_APP_T1 = 'use_mobile_app_t1'
+    MOBILE_APP_USED_T1 = 'mobile_app_used_t1'
+    USE_MOBILE_APP_T2 = 'use_mobile_app_t2'
+    MOBILE_APP_USED_T2 = 'mobile_app_used_t2'
 
 
 class SenderType(Enum):
@@ -34,8 +37,8 @@ class SenderType(Enum):
 
 
 @dataclass
-class ConnectRequestMessage:
-    message_type: ClassVar[MessageType] = MessageType.CONNECT_REQUEST
+class ConnectMessage:
+    message_type: ClassVar[MessageType] = MessageType.CONNECT
     sender_type: SenderType
 
     @classmethod
@@ -61,8 +64,8 @@ class ConnectRequestMessage:
 
 
 @dataclass
-class CameraConnectedMessage:
-    message_type: ClassVar[MessageType] = MessageType.CAMERA_CONNECTED
+class ConnectedMessage:
+    message_type: ClassVar[MessageType] = MessageType.CONNECTED
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -84,8 +87,8 @@ class CameraConnectedMessage:
 
 
 @dataclass
-class GasNozzleConnectedMessage:
-    message_type: ClassVar[MessageType] = MessageType.GAS_NOZZLE_CONNECTED
+class ServiceReadyMessage:
+    message_type: ClassVar[MessageType] = MessageType.SERVICE_READY
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -107,54 +110,8 @@ class GasNozzleConnectedMessage:
 
 
 @dataclass
-class CameraDisconnectedMessage:
-    message_type: ClassVar[MessageType] = MessageType.CAMERA_DISCONNECTED
-
-    @classmethod
-    def from_dict(cls, data_dict: dict) -> Self:
-        if data_dict['message_type'] == cls.message_type.value:
-            return cls()
-        raise ValueError('message_type is invalid')
-
-    @classmethod
-    def from_json(cls, json_str: str) -> Self:
-        return cls.from_dict(json.loads(json_str))
-
-    def to_dict(self) -> dict:
-        return {
-            'message_type': self.message_type.value,
-        }
-
-    def to_json(self) -> str:
-        return json.dumps(self.to_dict())
-
-
-@dataclass
-class GasNozzleDisconnectedMessage:
-    message_type: ClassVar[MessageType] = MessageType.GAS_NOZZLE_DISCONNECTED
-
-    @classmethod
-    def from_dict(cls, data_dict: dict) -> Self:
-        if data_dict['message_type'] == cls.message_type.value:
-            return cls()
-        raise ValueError('message_type is invalid')
-
-    @classmethod
-    def from_json(cls, json_str: str) -> Self:
-        return cls.from_dict(json.loads(json_str))
-
-    def to_dict(self) -> dict:
-        return {
-            'message_type': self.message_type.value,
-        }
-
-    def to_json(self) -> str:
-        return json.dumps(self.to_dict())
-
-
-@dataclass
-class StartServiceRequestMessage:
-    message_type: ClassVar[MessageType] = MessageType.START_SERVICE_REQUEST
+class ServiceNotReadyMessage:
+    message_type: ClassVar[MessageType] = MessageType.SERVICE_NOT_READY
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -199,8 +156,8 @@ class StartServiceMessage:
 
 
 @dataclass
-class ResetServiceRequestMessage:
-    message_type: ClassVar[MessageType] = MessageType.RESET_SERVICE_REQUEST
+class ServiceStartedMessage:
+    message_type: ClassVar[MessageType] = MessageType.SERVICE_STARTED
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -222,8 +179,8 @@ class ResetServiceRequestMessage:
 
 
 @dataclass
-class ResetServiceMessage:
-    message_type: ClassVar[MessageType] = MessageType.RESET_SERVICE
+class EndServiceMessage:
+    message_type: ClassVar[MessageType] = MessageType.END_SERVICE
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -245,8 +202,8 @@ class ResetServiceMessage:
 
 
 @dataclass
-class CancelRefuelingRequestMessage:
-    message_type: ClassVar[MessageType] = MessageType.CANCEL_REFUELING_REQUEST
+class ServiceEndedMessage:
+    message_type: ClassVar[MessageType] = MessageType.SERVICE_ENDED
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -291,8 +248,31 @@ class CancelRefuelingMessage:
 
 
 @dataclass
-class CarNumberSentMessage:
-    message_type: ClassVar[MessageType] = MessageType.CAR_NUMBER_SENT
+class RefuelingCanceledMessage:
+    message_type: ClassVar[MessageType] = MessageType.REFUELING_CANCELED
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        if data_dict['message_type'] == cls.message_type.value:
+            return cls()
+        raise ValueError('message_type is invalid')
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> dict:
+        return {
+            'message_type': self.message_type.value,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass
+class UseStationT1Message:
+    message_type: ClassVar[MessageType] = MessageType.USE_STATION_T1
     car_number: CarNumber
 
     @classmethod
@@ -318,35 +298,8 @@ class CarNumberSentMessage:
 
 
 @dataclass
-class CarNumberReceivedMessage:
-    message_type: ClassVar[MessageType] = MessageType.CAR_NUMBER_RECEIVED
-    car_number: CarNumber
-
-    @classmethod
-    def from_dict(cls, data_dict: dict) -> Self:
-        if data_dict['message_type'] == cls.message_type.value:
-            return cls(
-                car_number=CarNumber(text=data_dict['car_number']),
-            )
-        raise ValueError('message_type is invalid')
-
-    @classmethod
-    def from_json(cls, json_str: str) -> Self:
-        return cls.from_dict(json.loads(json_str))
-
-    def to_dict(self) -> dict:
-        return {
-            'message_type': self.message_type.value,
-            'car_number': self.car_number.text,
-        }
-
-    def to_json(self) -> str:
-        return json.dumps(self.to_dict())
-
-
-@dataclass
-class StartStationMessage:
-    message_type: ClassVar[MessageType] = MessageType.START_STATION
+class StationUsedT1Message:
+    message_type: ClassVar[MessageType] = MessageType.STATION_USED_T1
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -368,8 +321,8 @@ class StartStationMessage:
 
 
 @dataclass
-class StartGasNozzleRequestMessage:
-    message_type: ClassVar[MessageType] = MessageType.START_GAS_NOZZLE_REQUEST
+class UseStationT2Message:
+    message_type: ClassVar[MessageType] = MessageType.USE_STATION_T2
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -391,8 +344,8 @@ class StartGasNozzleRequestMessage:
 
 
 @dataclass
-class StartGasNozzleMessage:
-    message_type: ClassVar[MessageType] = MessageType.START_GAS_NOZZLE
+class StationUsedT2Message:
+    message_type: ClassVar[MessageType] = MessageType.STATION_USED_T2
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -414,8 +367,8 @@ class StartGasNozzleMessage:
 
 
 @dataclass
-class FinishGasNozzleRequestMessage:
-    message_type: ClassVar[MessageType] = MessageType.FINISH_GAS_NOZZLE_REQUEST
+class UseGasNozzleT1Message:
+    message_type: ClassVar[MessageType] = MessageType.USE_GAS_NOZZLE_T1
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -437,8 +390,146 @@ class FinishGasNozzleRequestMessage:
 
 
 @dataclass
-class FinishGasNozzleMessage:
-    message_type: ClassVar[MessageType] = MessageType.FINISH_GAS_NOZZLE
+class GasNozzleUsedT1Message:
+    message_type: ClassVar[MessageType] = MessageType.GAS_NOZZLE_USED_T1
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        if data_dict['message_type'] == cls.message_type.value:
+            return cls()
+        raise ValueError('message_type is invalid')
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> dict:
+        return {
+            'message_type': self.message_type.value,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass
+class UseGasNozzleT2Message:
+    message_type: ClassVar[MessageType] = MessageType.USE_GAS_NOZZLE_T2
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        if data_dict['message_type'] == cls.message_type.value:
+            return cls()
+        raise ValueError('message_type is invalid')
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> dict:
+        return {
+            'message_type': self.message_type.value,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass
+class GasNozzleUsedT2Message:
+    message_type: ClassVar[MessageType] = MessageType.GAS_NOZZLE_USED_T2
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        if data_dict['message_type'] == cls.message_type.value:
+            return cls()
+        raise ValueError('message_type is invalid')
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> dict:
+        return {
+            'message_type': self.message_type.value,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass
+class UseMobileAppT1Message:
+    message_type: ClassVar[MessageType] = MessageType.USE_MOBILE_APP_T1
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        if data_dict['message_type'] == cls.message_type.value:
+            return cls()
+        raise ValueError('message_type is invalid')
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> dict:
+        return {
+            'message_type': self.message_type.value,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass
+class MobileAppUsedT1Message:
+    message_type: ClassVar[MessageType] = MessageType.MOBILE_APP_USED_T1
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        if data_dict['message_type'] == cls.message_type.value:
+            return cls()
+        raise ValueError('message_type is invalid')
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> dict:
+        return {
+            'message_type': self.message_type.value,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass
+class UseMobileAppT2Message:
+    message_type: ClassVar[MessageType] = MessageType.USE_MOBILE_APP_T2
+
+    @classmethod
+    def from_dict(cls, data_dict: dict) -> Self:
+        if data_dict['message_type'] == cls.message_type.value:
+            return cls()
+        raise ValueError('message_type is invalid')
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> dict:
+        return {
+            'message_type': self.message_type.value,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+@dataclass
+class MobileAppUsedT2Message:
+    message_type: ClassVar[MessageType] = MessageType.MOBILE_APP_USED_T2
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:

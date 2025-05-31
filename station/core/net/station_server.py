@@ -1,4 +1,5 @@
 import json
+from mailbox import Message
 from bidict import bidict
 from typing import cast
 
@@ -6,26 +7,19 @@ from PySide6.QtCore import QObject, Slot, Signal
 from PySide6.QtWebSockets import QWebSocket, QWebSocketServer
 from PySide6.QtNetwork import QHostAddress
 
-from core.model.station_ws_api import *
+from core.model.station_api import *
 
 from core.util import get_station_host, get_station_port
 
 
-class StationWsServer(QObject):
-    cameraDisconnected: Signal = Signal()
-    gasNozzleDisconnected: Signal = Signal()
-
-    startServiceRequest: Signal = Signal()
-    resetServiceRequest: Signal = Signal()
-    resetService: Signal = Signal()
-    cancelRefuelingRequest: Signal = Signal()
-    cancelRefueling: Signal = Signal()
-    carNumberSent: Signal = Signal(CarNumberSentMessage)
-    carNumberReceived: Signal = Signal(CarNumberReceivedMessage)
-    startGasNozzleRequest: Signal = Signal()
-    startGasNozzle: Signal = Signal()
-    finishGasNozzleRequest: Signal = Signal()
-    finishGasNozzle: Signal = Signal()
+class StationServer(QObject):
+    serviceReady: Signal = Signal()
+    serviceNotReady: Signal = Signal()
+    serviceStarted: Signal = Signal()
+    refuelingCanceled: Signal = Signal()
+    useStationT1: Signal = Signal(UseStationT1Message)
+    stationUsedT2: Signal = Signal()
+    mobileAppUsedT2: Signal = Signal()
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -64,45 +58,44 @@ class StationWsServer(QObject):
 
         self._server.close()
 
-    def sendStartService(self) -> None:
-        message = StartServiceMessage()
+    def sendServiceReady(self) -> None:
+        message = ServiceReadyMessage()
         self.sendToAll(message.to_json())
 
-    def sendResetServiceRequest(self) -> None:
-        self.resetServiceRequest.emit()
-
-    def sendResetService(self) -> None:
-        self.resetService.emit()
-        message = ResetServiceMessage()
+    def sendServiceStarted(self) -> None:
+        message = ServiceStartedMessage()
         self.sendToAll(message.to_json())
 
-    def sendCancelRefuelingRequest(self) -> None:
-        self.cancelRefuelingRequest.emit()
-
-    def sendCancelRefueling(self) -> None:
-        self.cancelRefueling.emit()
-        message = CancelRefuelingMessage()
+    def sendServiceEnded(self) -> None:
+        message = ServiceEndedMessage()
         self.sendToAll(message.to_json())
 
-    def sendCarNumberReceived(self, message: CarNumberReceivedMessage) -> None:
-        self.carNumberReceived.emit(message)
+    def sendRefuelingCanceled(self) -> None:
+        message = RefuelingCanceledMessage()
         self.sendToAll(message.to_json())
 
-    def sendStartStation(self) -> None:
-        message = StartStationMessage()
+    def sendStationUsedT1(self) -> None:
+        message = StationUsedT1Message()
         self.sendToAll(message.to_json())
 
-    def sendStartGasNozzleRequest(self) -> None:
-        self.startGasNozzleRequest.emit()
-
-    def sendStartGasNozzle(self) -> None:
-        self.startGasNozzle.emit()
-        message = StartGasNozzleMessage()
+    def sendStationUsedT2(self) -> None:
+        message = StationUsedT2Message()
         self.sendToAll(message.to_json())
 
-    def sendFinishGasNozzle(self) -> None:
-        self.finishGasNozzle.emit()
-        message = FinishGasNozzleMessage()
+    def sendGasNozzleUsedT1(self) -> None:
+        message = GasNozzleUsedT1Message()
+        self.sendToAll(message.to_json())
+
+    def sendGasNozzleUsedT2(self) -> None:
+        message = GasNozzleUsedT2Message()
+        self.sendToAll(message.to_json())
+
+    def sendMobileAppUsedT1(self) -> None:
+        message = MobileAppUsedT1Message()
+        self.sendToAll(message.to_json())
+
+    def sendMobileAppUsedT2(self) -> None:
+        message = MobileAppUsedT2Message()
         self.sendToAll(message.to_json())
 
     def sendToAll(self, json_str: str) -> None:
@@ -130,39 +123,44 @@ class StationWsServer(QObject):
         message_type = MessageType(json.loads(json_str)['message_type'])
 
         match (message_type):
-            case MessageType.CONNECT_REQUEST:
-                message = ConnectRequestMessage.from_json(json_str)
+            case MessageType.CONNECT:
+                message = ConnectMessage.from_json(json_str)
 
                 if (self._station_client.inv.get(message.sender_type) is None):
                     self._station_client[client] = message.sender_type
                     match message.sender_type:
                         case SenderType.CAMERA:
-                            message = CameraConnectedMessage()
+                            new_message = ConnectedMessage()
                             client.sendTextMessage(message.to_json())
                         case SenderType.GAS_NOZZLE:
-                            message = GasNozzleConnectedMessage()
-                            client.sendTextMessage(message.to_json())
+                            new_message = ConnectedMessage()
+                            client.sendTextMessage(new_message.to_json())
 
                     if (None not in [self._station_client.inv.get(SenderType.CAMERA), self._station_client.inv.get(SenderType.GAS_NOZZLE)]):
-                        self.sendResetServiceRequest()
+                        self.sendServiceReady()
+                        self.serviceReady.emit()
                 else:
                     print(f'STATION SERVER | warning: one more {message.sender_type.value} wants connect')
 
-            case MessageType.START_SERVICE_REQUEST:
-                self.startServiceRequest.emit()
-            case MessageType.RESET_SERVICE:
-                self.resetService.emit()
-            case MessageType.RESET_SERVICE:
-                self.resetService.emit()
-            case MessageType.CANCEL_REFUELING_REQUEST:
-                self.cancelRefuelingRequest.emit()
-            case MessageType.CAR_NUMBER_SENT:
-                message = CarNumberSentMessage.from_json(json_str)
-                self.carNumberSent.emit(message)
-            case MessageType.START_GAS_NOZZLE_REQUEST:
-                self.startGasNozzleRequest.emit()
-            case MessageType.FINISH_GAS_NOZZLE_REQUEST:
-                self.finishGasNozzleRequest.emit()
+            case MessageType.START_SERVICE:
+                self.sendServiceStarted()
+                self.serviceStarted.emit()
+
+            case MessageType.USE_STATION_T1:
+                message = UseStationT1Message.from_json(json_str)
+                self.useStationT1.emit(message)
+
+            case MessageType.USE_STATION_T2:
+                self.sendStationUsedT2()
+                self.stationUsedT2.emit()
+
+            case MessageType.CANCEL_REFUELING:
+                self.sendRefuelingCanceled()
+                self.refuelingCanceled.emit()
+
+            case MessageType.USE_MOBILE_APP_T2:
+                self.sendMobileAppUsedT2()
+                self.mobileAppUsedT2.emit()
 
     @Slot()
     def onClientDisconnected(self) -> None:
@@ -171,18 +169,18 @@ class StationWsServer(QObject):
 
         match(sender_type):
             case SenderType.CAMERA:
-                message = CameraDisconnectedMessage()
+                message = ServiceNotReadyMessage()
                 gas_nozzle = self._station_client.inv.get(SenderType.GAS_NOZZLE)
                 if (gas_nozzle is not None):
                     gas_nozzle.sendTextMessage(message.to_json())
-                self.cameraDisconnected.emit()
+                self.serviceNotReady.emit()
 
             case SenderType.GAS_NOZZLE:
-                message = GasNozzleDisconnectedMessage()
+                message = ServiceNotReadyMessage()
                 camera = self._station_client.inv.get(SenderType.CAMERA)
                 if (camera is not None):
                     camera.sendTextMessage(message.to_json())
-                self.gasNozzleDisconnected.emit()
+                self.serviceNotReady.emit()
 
         if (sender_type is not None):
             del self._station_client[client]
@@ -190,5 +188,6 @@ class StationWsServer(QObject):
         print(f'STATION SERVER | client {client.peerAddress().toString()}:{client.peerPort()} disconnected')
         self._clients.remove(client)
 
+    @Slot()
     def onStopped(self) -> None:
         print('STATION SERVER | server stopped')

@@ -4,9 +4,8 @@ from core.window.main_window_ui import MainWindowUI, ViewName
 
 from core.model.camera_load import CameraLoad
 from core.model.car_number import CarNumber
-from core.model.station_ws_api import CarNumberSentMessage
 
-from core.net.station_ws_client import StationWsClient
+from core.net.net import Net
 
 from core.data_base.data_base import data_base
 
@@ -19,6 +18,8 @@ class MainWindow(QObject):
 
         self.ui: MainWindowUI = MainWindowUI()
 
+        self.ui.station_server_reconnection_screen.reconnectClicked.connect(self.onReconnectClicked)
+
         self.ui.start_screen.startClicked.connect(self.onStartClicked)
         self.ui.selection_screen.imageSelected.connect(self.onImageSelected)
         self.ui.selection_screen.cancelRefuelingClicked.connect(self.onCancelRefuelingClicked)
@@ -27,22 +28,19 @@ class MainWindow(QObject):
         self.ui.recognition_screen.cancelRefuelingClicked.connect(self.onCancelRefuelingClicked)
         self.ui.non_recognition_screen.confirmClicked.connect(self.onConfirmClicked)
         self.ui.non_recognition_screen.cancelRefuelingClicked.connect(self.onCancelRefuelingClicked)
-        self.ui.reconnection_screen.reconnectClicked.connect(self.onReconnectClicked)
 
-        self.station_ws_client: StationWsClient = StationWsClient(self)
+        self._net: Net = Net(self)
 
-        self.station_ws_client.connected.connect(self.onStationConnected)
-        self.station_ws_client.disconnected.connect(self.onStationDisconnected)
-        self.station_ws_client.gasNozzleDisconnected.connect(self.onGasNozzleDisconnected)
-        self.station_ws_client.startService.connect(self.onStartService)
-        self.station_ws_client.resetService.connect(self.onResetService)
-        self.station_ws_client.cancelRefueling.connect(self.onCancelRefueling)
-        self.station_ws_client.startStation.connect(self.onStartStation)
-        self.station_ws_client.startGasNozzle.connect(self.onStartGasNozzle)
-        self.station_ws_client.finishGasNozzle.connect(self.onFinishGasNozzle)
+        self._net.stationServerDisconnected.connect(self.onStationServerDisconnected)
+        self._net.reset.connect(self.onReset)
+        self._net.serviceStarted.connect(self.onServiceStarted)
+        self._net.componentConnection.connect(self.onComponentConnection)
+        self._net.stationUsed.connect(self.onStationUsed)
+        self._net.gasNozzleUsed.connect(self.onGasNozzleUsed)
+        self._net.mobileAppUsed.connect(self.onMobileAppUsed)
 
-        self.ui.setCurrentView(ViewName.WAITING)
-        self.station_ws_client.start()
+        self.ui.setCurrentView(ViewName.STATION_SERVER_RECONNECTION)
+        self._net.connectStationServer()
 
         self.ui.show()
 
@@ -52,19 +50,30 @@ class MainWindow(QObject):
         self.ui.recognition_screen.clearInput()
         self.ui.non_recognition_screen.clearInput()
 
-    # ui
-
     @Slot()
     def onReconnectClicked(self) -> None:
-        self.station_ws_client.start()
+        self._net.connectStationServer()
+
+    @Slot()
+    def onStationServerDisconnected(self) -> None:
+        self.ui.setCurrentView(ViewName.STATION_SERVER_RECONNECTION)
+
+    @Slot()
+    def onReset(self) -> None:
+        self.clearInput()
+        self.ui.setCurrentView(ViewName.START)
 
     @Slot()
     def onStartClicked(self) -> None:
-        self.station_ws_client.sendStartServiceRequest()
+        self._net.startService()
+
+    @Slot()
+    def onServiceStarted(self) -> None:
+        self.ui.setCurrentView(ViewName.SELECTION)
 
     @Slot()
     def onCancelRefuelingClicked(self) -> None:
-        self.station_ws_client.sendCancelRefuelingRequest()
+        self._net.cancelRefueling()
 
     @Slot()
     def onImageSelected(self, load: CameraLoad | None) -> None:
@@ -83,44 +92,20 @@ class MainWindow(QObject):
     @Slot()
     def onConfirmClicked(self, car_number: CarNumber) -> None:
         self.clearInput()
-        message = CarNumberSentMessage(car_number=car_number)
-        self.station_ws_client.sendCarNumberSent(message)
-
-    # station ws client
+        self._net.useStation(car_number)
 
     @Slot()
-    def onStationConnected(self) -> None:
-        self.ui.setCurrentView(ViewName.WAITING)
+    def onComponentConnection(self) -> None:
+        self.ui.setCurrentView(ViewName.COMPONENT_CONNECTION)
 
     @Slot()
-    def onStationDisconnected(self) -> None:
-        self.ui.setCurrentView(ViewName.RECONNECTION)
-
-    @Slot()
-    def onGasNozzleDisconnected(self) -> None:
-        self.ui.setCurrentView(ViewName.WAITING)
-
-    @Slot()
-    def onStartService(self) -> None:
-        self.ui.setCurrentView(ViewName.SELECTION)
-
-    @Slot()
-    def onResetService(self) -> None:
-        self.clearInput()
-        self.ui.setCurrentView(ViewName.START)
-
-    @Slot()
-    def onCancelRefueling(self) -> None:
+    def onStationUsed(self) -> None:
         self.ui.setCurrentView(ViewName.STATION_USE)
 
     @Slot()
-    def onStartStation(self) -> None:
-        self.ui.setCurrentView(ViewName.STATION_USE)
-
-    @Slot()
-    def onStartGasNozzle(self) -> None:
+    def onGasNozzleUsed(self) -> None:
         self.ui.setCurrentView(ViewName.GAS_NOZZLE_USE)
 
     @Slot()
-    def onFinishGasNozzle(self) -> None:
-        self.ui.setCurrentView(ViewName.STATION_USE)
+    def onMobileAppUsed(self) -> None:
+        self.ui.setCurrentView(ViewName.MOBILE_APP_USE)

@@ -4,12 +4,12 @@ from PySide6.QtCore import Qt
 from core.style import qss
 
 
-class ReconnectionScreenUI(QWidget):
+class StationServerReconnectionScreenUI(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         self.title_label: QLabel = QLabel(self)
-        self.title_label.setText('Нет подключения к центральному серверу')
+        self.title_label.setText('Нет подключения к колонке')
         self.title_label.setStyleSheet(qss.colored_title)
 
         self.retry_button: QPushButton = QPushButton(self)

@@ -2,6 +2,8 @@ from enum import Enum
 
 from PySide6.QtWidgets import QMainWindow, QWidget, QStackedWidget
 
+from core.widget.reconnection_screen.central_server_reconnection_screen import CentralServerReconnectionScreen
+from core.widget.component_connection_screen.component_connection_screen import ComponentConnectionScreen
 from core.widget.fuel_selection_screen.fuel_selection_screen import FuelSelectionScreen
 from core.widget.payment_selection_screen.payment_selection_screen import PaymentSelectionScreen
 from core.widget.payment_processing_screen.payment_processing_screen import PaymentProcessingScreen
@@ -9,22 +11,20 @@ from core.widget.payment_error_screen.payment_error_screen import PaymentErrorSc
 from core.widget.finish_screen.finish_screen import FinishScreen
 from core.widget.camera_use_screen.camera_use_screen import CameraUseScreen
 from core.widget.gas_nozzle_use_screen.gas_nozzle_use_screen import GasNozzleUseScreen
-from core.widget.waiting_screen.waiting_screen import WaitingScreen
-from core.widget.reconnection_screen.reconnection_screen import ReconnectionScreen
+from core.widget.mobile_app_use_screen.mobile_app_use_screen import MobileAppUseScreen
 
 
 class ViewName(Enum):
+    CENTRAL_SERVER_RECONNECTION = 'central_server_reconnection_screen'
+    COMPONENT_CONNECTION = 'component_connection'
     FUEL_SELECTION = 'fuel_selection_screen'
     PAYMENT_SELECTION = 'payment_selection_screen'
     PAYMENT_PROCESSING = 'payment_processing_screen'
     PAYMENT_ERROR = 'payment_error_screen'
     FINISH = 'finish_screen'
-
     CAMERA_USE = 'camera_use_screen'
     GAS_NOZZLE_USE = 'gas_nozzle_use_screen'
-
-    WAITING = 'waiting_screen'
-    RECONNECTION = 'reconnection_screen'
+    MOBILE_APP_USE = 'mobile_app_use_screen'
 
 
 class MainWindowUI(QMainWindow):
@@ -34,6 +34,8 @@ class MainWindowUI(QMainWindow):
         self.setGeometry(0, 0, 1280, 720)
         self.setMinimumSize(400, 300)
 
+        self.central_server_reconnection_screen: CentralServerReconnectionScreen = CentralServerReconnectionScreen(self)
+        self.component_connection_screen: ComponentConnectionScreen = ComponentConnectionScreen(self)
         self.fuel_selection_screen: FuelSelectionScreen = FuelSelectionScreen(self)
         self.payment_selection_screen: PaymentSelectionScreen = PaymentSelectionScreen(self)
         self.payment_processing_screen: PaymentProcessingScreen = PaymentProcessingScreen(self)
@@ -41,12 +43,13 @@ class MainWindowUI(QMainWindow):
         self.finish_screen: FinishScreen = FinishScreen(self)
         self.camera_use_screen: CameraUseScreen = CameraUseScreen(self)
         self.gas_nozzle_use_screen: GasNozzleUseScreen = GasNozzleUseScreen(self)
-        self.waiting_screen: WaitingScreen = WaitingScreen(self)
-        self.reconnection_screen: ReconnectionScreen = ReconnectionScreen(self)
+        self.mobile_app_use_screen: MobileAppUseScreen = MobileAppUseScreen(self)
 
         self.stack: QStackedWidget = QStackedWidget()
 
         self.stack_indices: dict = {
+            ViewName.CENTRAL_SERVER_RECONNECTION: self.stack.addWidget(self.central_server_reconnection_screen.ui),
+            ViewName.COMPONENT_CONNECTION: self.stack.addWidget(self.component_connection_screen.ui),
             ViewName.FUEL_SELECTION: self.stack.addWidget(self.fuel_selection_screen.ui),
             ViewName.PAYMENT_SELECTION: self.stack.addWidget(self.payment_selection_screen.ui),
             ViewName.PAYMENT_PROCESSING: self.stack.addWidget(self.payment_processing_screen.ui),
@@ -54,8 +57,7 @@ class MainWindowUI(QMainWindow):
             ViewName.FINISH: self.stack.addWidget(self.finish_screen.ui),
             ViewName.CAMERA_USE: self.stack.addWidget(self.camera_use_screen.ui),
             ViewName.GAS_NOZZLE_USE: self.stack.addWidget(self.gas_nozzle_use_screen.ui),
-            ViewName.WAITING: self.stack.addWidget(self.waiting_screen.ui),
-            ViewName.RECONNECTION: self.stack.addWidget(self.reconnection_screen.ui),
+            ViewName.MOBILE_APP_USE: self.stack.addWidget(self.mobile_app_use_screen.ui),
         }
 
         self.setCentralWidget(self.stack)

@@ -2,18 +2,14 @@ from PySide6.QtCore import QObject, Slot
 
 from core.window.main_window_ui import MainWindowUI, ViewName
 
-from core.model.car_number import CarNumber
 from core.model.fuel_type import FuelType
 from core.widget.fuel_selection_screen.fuel_selection_screen import FuelSelectionData
 from core.model.payment_selection_data import PaymentSelectionData
 
-from core.model.central_server_ws_api import LoyaltyCardAskMessage, FuelPriceDataSentMessage, LoyaltyCardSentMessage, PaymentSentMessage
-from core.model.station_ws_api import CarNumberSentMessage, CarNumberReceivedMessage
-from core.model.bank_http_api import PayRequest, PayResponse
+from core.model import bank_api
+from core.model import central_server_api
 
-from core.net.central_server_ws_client import CentralServerWsClient
-from core.net.station_ws_server import StationWsServer
-from core.net.bank_http_client import BankHttpClient
+from core.net.net import Net
 
 
 class MainWindow(QObject):
@@ -29,73 +25,84 @@ class MainWindow(QObject):
         self.ui.payment_selection_screen.cancelRefuelingClicked.connect(self.onCancelRefuelingClicked)
         self.ui.payment_error_screen.retryPaymentClicked.connect(self.onRetryPaymentClicked)
         self.ui.finish_screen.confirmClicked.connect(self.onConfirmClicked)
-        self.ui.reconnection_screen.reconnectClicked.connect(self.onReconnectClicked)
+        self.ui.central_server_reconnection_screen.reconnectClicked.connect(self.onReconnectClicked)
 
-        self.central_server_ws_client: CentralServerWsClient = CentralServerWsClient(self)
+        self._net: Net = Net(self)
 
-        self.central_server_ws_client.connected.connect(self.onCentralServerConnected)
-        self.central_server_ws_client.disconnected.connect(self.onCentralServerDisconnected)
-        self.central_server_ws_client.stationNotTaken.connect(self.onStationNotTaken)
-        self.central_server_ws_client.stationTakenOffline.connect(self.onStationTakenOffline)
-        self.central_server_ws_client.fuelPriceDataSent.connect(self.onFuelPriceDataSent)
-        self.central_server_ws_client.loyaltyCardSent.connect(self.onLoyaltyCardSent)
-        self.central_server_ws_client.paymentReceived.connect(self.onPaymentReceived)
-
-        self.station_ws_server: StationWsServer = StationWsServer(self)
-
-        self.station_ws_server.cameraDisconnected.connect(self.onCameraDisconnected)
-        self.station_ws_server.gasNozzleDisconnected.connect(self.onGasNozzleDisconnected)
-        self.station_ws_server.resetServiceRequest.connect(self.onResetServiceRequest)
-        self.station_ws_server.resetService.connect(self.onResetService)
-        self.station_ws_server.startServiceRequest.connect(self.onStartServiceRequest)
-        self.station_ws_server.cancelRefuelingRequest.connect(self.onCancelRefuelingRequest)
-        self.station_ws_server.cancelRefueling.connect(self.onCancelRefueling)
-        self.station_ws_server.carNumberSent.connect(self.onCarNumberSent)
-        self.station_ws_server.carNumberReceived.connect(self.onCarNumberReceived)
-        self.station_ws_server.startGasNozzleRequest.connect(self.onStartGasNozzleRequest)
-        self.station_ws_server.startGasNozzle.connect(self.onStartGasNozzle)
-        self.station_ws_server.finishGasNozzleRequest.connect(self.onFinishGasNozzleRequest)
-        self.station_ws_server.finishGasNozzle.connect(self.onFinishGasNozzle)
-
-        self.bank_client: BankHttpClient = BankHttpClient(self)
-
-        self.bank_client.payResponse.connect(self.onPaymentSuccess)
-        self.bank_client.payError.connect(self.onPaymentError)
+        self._net.centralServerDisconnected.connect(self.onCentralServerDisconnected)
+        self._net.reset.connect(self.onReset)
+        self._net.stationUsedT1.connect(self.onStationUsedT1)
+        self._net.paymentError.connect(self.onPaymentError)
+        self._net.paymentSuccess.connect(self.onPaymentSuccess)
+        self._net.componentConnection.connect(self.onComponentConnection)
+        self._net.refuelingCanceled.connect(self.onRefuelingCanceled)
+        self._net.stationUsedT2.connect(self.onStationUsedT2)
+        self._net.gasNozzleUsed.connect(self.onGasNozzleUsed)
+        self._net.mobileAppUsed.connect(self.onMobileAppUsed)
 
         self._fuel_type: FuelType | None = None
         self._fuel_amount: int | None = None
-        self._car_number: CarNumber | None = None
         self._payment_amount: int | None = None
-        self._payment_key: str | None = None
         self._used_bonuses: int | None = None
 
-        self._fuel_price_data_updated = False
-        self._loyalty_card_updated = False
-
-        self.ui.setCurrentView(ViewName.WAITING)
-        self.central_server_ws_client.start()
+        self.ui.setCurrentView(ViewName.CENTRAL_SERVER_RECONNECTION)
+        self._net.connectCentralServer()
 
         self.ui.show()
 
     def clearInput(self) -> None:
         self._fuel_type = None
         self._fuel_amount = None
-        self._car_number = None
         self._payment_amount = None
-        self._payment_key = None
         self._used_bonuses = None
 
-        self._fuel_price_data_updated = False
-        self._loyalty_card_updated = False
+        self._net.car_number = None
+        self._net.fuelPriceDataSent = None
+        self._net.loyaltyCardSent = None
 
         self.ui.fuel_selection_screen.clearInput()
         self.ui.payment_selection_screen.clearInput()
 
-    # ui
-
     @Slot()
     def onReconnectClicked(self) -> None:
-        self.central_server_ws_client.start()
+        self._net.connectCentralServer()
+
+    @Slot()
+    def onCentralServerDisconnected(self) -> None:
+        self.ui.setCurrentView(ViewName.CENTRAL_SERVER_RECONNECTION)
+
+    @Slot()
+    def onReset(self) -> None:
+        self.clearInput()
+        self.ui.setCurrentView(ViewName.CAMERA_USE)
+
+    @Slot()
+    def onStationUsedT1(self) -> None:
+        fuelPriceDataSent = self._net.fuelPriceDataSent
+        if (fuelPriceDataSent is not None):
+            self.ui.fuel_selection_screen.setFuelPriceData(fuelPriceDataSent.fuel_price_data)
+        else:
+            print('STATION | error: no fuel price data sent')
+
+        loyaltyCardSent = self._net.loyaltyCardSent
+        if (loyaltyCardSent is not None):
+            if (loyaltyCardSent.loyalty_card_available):
+                if (loyaltyCardSent.loyalty_card_holder is None):
+                    print('STATION | error: loyalty_card_holder not found')
+                elif (loyaltyCardSent.loyalty_card_bonuses is None):
+                    print('STATION | error: loyalty_card_bonuses not found')
+                else:
+                    self.ui.payment_selection_screen.setLoyaltyCardHolderName(loyaltyCardSent.loyalty_card_holder)
+                    self.ui.payment_selection_screen.setCurrentBonuses(loyaltyCardSent.loyalty_card_bonuses)
+                    self.ui.payment_selection_screen.showLoyaltyCardForm()
+        else:
+            print('STATION | error: no loyalty card sent')
+
+        self.ui.setCurrentView(ViewName.FUEL_SELECTION)
+
+    @Slot()
+    def onCancelRefuelingClicked(self) -> None:
+        self._net.cancelRefueling()
 
     @Slot()
     def onContinuePaymentClicked(self, data: FuelSelectionData) -> None:
@@ -106,175 +113,78 @@ class MainWindow(QObject):
         self.ui.setCurrentView(ViewName.PAYMENT_SELECTION)
 
     @Slot()
+    def onBackFuelSelectionClicked(self) -> None:
+        self.ui.setCurrentView(ViewName.FUEL_SELECTION)
+
+    @Slot()
     def onPayClicked(self, data: PaymentSelectionData) -> None:
         self._used_bonuses = data.used_bonuses
         self._payment_amount = data.payment_amount
 
         self.ui.setCurrentView(ViewName.PAYMENT_PROCESSING)
-        request = PayRequest(
+        request = bank_api.PayRequest(
             deposit_card_number=data.card_number,
             deposit_card_expiration_date=self._unformat_expiration_date(data.expiration_date),
             deposit_card_holder_name=data.holder_name,
             payment_amount=data.payment_amount,
         )
-        self.bank_client.sendPayRequest(request)
-
-    @Slot()
-    def onBackFuelSelectionClicked(self) -> None:
-        self.ui.setCurrentView(ViewName.FUEL_SELECTION)
-
-    @Slot()
-    def onCancelRefuelingClicked(self) -> None:
-        self.ui.setCurrentView(ViewName.FINISH)
-
-    @Slot()
-    def onRetryPaymentClicked(self) -> None:
-        self.ui.setCurrentView(ViewName.PAYMENT_SELECTION)
-
-    @Slot()
-    def onConfirmClicked(self) -> None:
-        self.station_ws_server.sendResetServiceRequest()
-
-    # bank http client
+        self._net.payRequest(request)
 
     @Slot()
     def onPaymentError(self) -> None:
         self.ui.setCurrentView(ViewName.PAYMENT_ERROR)
 
     @Slot()
-    def onPaymentSuccess(self, response: PayResponse) -> None:
-        self._payment_key = response.payment_key
+    def onRetryPaymentClicked(self) -> None:
+        self.ui.setCurrentView(ViewName.PAYMENT_SELECTION)
 
-        if (self._fuel_type is None or
-            self._fuel_amount is None or
-            self._car_number is None or
-            self._payment_amount is None or
-            self._payment_key is None or
-                self._used_bonuses is None):
+    @Slot()
+    def onPaymentSuccess(self, message: bank_api.PayResponse) -> None:
+        car_number = self._net.car_number
+
+        if (car_number is None):
+            print('STATION | error: car number not found')
+        elif (self._fuel_type is None or
+              self._fuel_amount is None or
+              self._payment_amount is None or
+              self._used_bonuses is None):
             print('STATION | error: payment is not full described')
         else:
-            message = PaymentSentMessage(
+            new_message = central_server_api.SavePaymentMessage(
                 fuel_type=self._fuel_type,
                 fuel_amount=self._fuel_amount,
-                car_number=self._car_number,
+                car_number=car_number,
                 payment_amount=self._payment_amount,
-                payment_key=self._payment_key,
+                payment_key=message.payment_key,
                 used_bonuses=self._used_bonuses
             )
-            self.central_server_ws_client.sendPaymentSent(message)
+            self._net.savePayment(new_message)
 
-    # central server ws client
-
-    @Slot()
-    def onCentralServerConnected(self) -> None:
-        self.station_ws_server.start()
-        self.ui.setCurrentView(ViewName.WAITING)
-
-    @Slot()
-    def onCentralServerDisconnected(self) -> None:
-        self.station_ws_server.stop()
-        self.ui.setCurrentView(ViewName.RECONNECTION)
-
-    @Slot()
-    def onStationNotTaken(self) -> None:
-        self.station_ws_server.sendResetService()
-
-    @Slot()
-    def onStationTakenOffline(self) -> None:
-        self.station_ws_server.sendStartService()
-
-    @Slot()
-    def onFuelPriceDataSent(self, message: FuelPriceDataSentMessage) -> None:
-        self.ui.fuel_selection_screen.setFuelPriceData(message.fuel_price_data)
-        self._fuel_price_data_updated = True
-        self.trySetFuelSelectionScreen()
-
-    @Slot()
-    def onLoyaltyCardSent(self, message: LoyaltyCardSentMessage) -> None:
-        if (message.loyalty_card_available):
-            if (message.loyalty_card_holder is None):
-                print('STATION | error: loyalty_card_holder not found')
-            elif (message.loyalty_card_bonuses is None):
-                print('STATION | error: loyalty_card_bonuses not found')
-            else:
-                self.ui.payment_selection_screen.setLoyaltyCardHolderName(message.loyalty_card_holder)
-                self.ui.payment_selection_screen.setCurrentBonuses(message.loyalty_card_bonuses)
-                self.ui.payment_selection_screen.showLoyaltyCardForm()
-
-        self._loyalty_card_updated = True
-        self.trySetFuelSelectionScreen()
-
-    @Slot()
-    def trySetFuelSelectionScreen(self) -> None:
-        if (self._fuel_price_data_updated and self._loyalty_card_updated):
-            self.ui.setCurrentView(ViewName.FUEL_SELECTION)
-
-    @Slot()
-    def onPaymentReceived(self) -> None:
         self.clearInput()
-        self.station_ws_server.sendStartGasNozzleRequest()
-
-    # station ws server
 
     @Slot()
-    def onCameraDisconnected(self) -> None:
-        self.ui.setCurrentView(ViewName.WAITING)
+    def onComponentConnection(self) -> None:
+        self.ui.setCurrentView(ViewName.COMPONENT_CONNECTION)
 
     @Slot()
-    def onGasNozzleDisconnected(self) -> None:
-        self.ui.setCurrentView(ViewName.WAITING)
-
-    @Slot()
-    def onResetServiceRequest(self) -> None:
-        self.central_server_ws_client.sendStationNotTakenRequest()
-
-    @Slot()
-    def onResetService(self) -> None:
-        self.clearInput()
-        self.ui.setCurrentView(ViewName.CAMERA_USE)
-
-    @Slot()
-    def onStartServiceRequest(self) -> None:
-        self.central_server_ws_client.sendStationTakenOfflineRequest()
-
-    @Slot()
-    def onCancelRefuelingRequest(self) -> None:
-        self.station_ws_server.sendCancelRefueling()
-
-    @Slot()
-    def onCancelRefueling(self) -> None:
+    def onRefuelingCanceled(self) -> None:
         self.ui.setCurrentView(ViewName.FINISH)
 
     @Slot()
-    def onCarNumberSent(self, message: CarNumberSentMessage) -> None:
-        new_message = CarNumberReceivedMessage(car_number=message.car_number)
-        self.station_ws_server.sendCarNumberReceived(new_message)
+    def onStationUsedT2(self) -> None:
+        self.ui.setCurrentView(ViewName.FINISH)
 
     @Slot()
-    def onCarNumberReceived(self, message: CarNumberReceivedMessage) -> None:
-        self.station_ws_server.sendStartStation()
-        self._car_number = message.car_number
-        new_message = LoyaltyCardAskMessage(car_number=self._car_number)
-        self.central_server_ws_client.sendLoyaltyCardAsk(new_message)
-        self.central_server_ws_client.sendFuelPriceDataAsk()
+    def onConfirmClicked(self) -> None:
+        self._net.endService()
 
     @Slot()
-    def onStartGasNozzleRequest(self) -> None:
-        self.station_ws_server.sendStartGasNozzle()
-
-    @Slot()
-    def onStartGasNozzle(self) -> None:
+    def onGasNozzleUsed(self) -> None:
         self.ui.setCurrentView(ViewName.GAS_NOZZLE_USE)
 
     @Slot()
-    def onFinishGasNozzleRequest(self) -> None:
-        self.station_ws_server.sendFinishGasNozzle()
-
-    @Slot()
-    def onFinishGasNozzle(self) -> None:
-        self.ui.setCurrentView(ViewName.FINISH)
-
-    # misc
+    def onMobileAppUsed(self) -> None:
+        self.ui.setCurrentView(ViewName.MOBILE_APP_USE)
 
     @staticmethod
     def _unformat_expiration_date(expiration_date: str) -> str:

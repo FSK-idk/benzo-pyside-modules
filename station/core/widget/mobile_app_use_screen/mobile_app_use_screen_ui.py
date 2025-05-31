@@ -4,12 +4,12 @@ from PySide6.QtCore import Qt
 from core.style import qss
 
 
-class WaitingScreenUI(QWidget):
+class MobileAppUseScreenUI(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         self.title_label: QLabel = QLabel(self)
-        self.title_label.setText('Подключите все компоненты системы')
+        self.title_label.setText('Используйте мобильное приложение')
         self.title_label.setStyleSheet(qss.colored_title)
 
         main_layout = QVBoxLayout()

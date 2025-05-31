@@ -1,23 +1,22 @@
 from email import message
 import json
+from mailbox import Message
 
 from PySide6.QtCore import QObject, QUrl, Slot, Signal
 from PySide6.QtWebSockets import QWebSocket
 
-from core.model.central_server_ws_api import *
+from core.model.central_server_api import *
 
 from core.util import get_central_server_host, get_central_server_port, get_station_id
 
 
-class CentralServerWsClient(QObject):
+class CentralServerClient(QObject):
     connected: Signal = Signal()
     disconnected: Signal = Signal()
-
-    stationNotTaken: Signal = Signal()
-    stationTakenOffline: Signal = Signal()
     fuelPriceDataSent: Signal = Signal(FuelPriceDataSentMessage)
     loyaltyCardSent: Signal = Signal(LoyaltyCardSentMessage)
-    paymentReceived: Signal = Signal()
+    gasNozzleUsedT2: Signal = Signal()
+    mobileAppUsedT1: Signal = Signal()
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -44,26 +43,35 @@ class CentralServerWsClient(QObject):
     def stop(self) -> None:
         self._client.close()
 
-    def _sendConnectRequest(self) -> None:
-        message = ConnectRequestMessage()
+    def _sendConnect(self) -> None:
+        message = ConnectMessage()
         self._client.sendTextMessage(message.to_json())
 
-    def sendStationNotTakenRequest(self) -> None:
-        message = StationNotTakenRequestMessage()
+    def sendServiceReady(self) -> None:
+        message = ServiceReadyMessage()
         self._client.sendTextMessage(message.to_json())
 
-    def sendStationTakenOfflineRequest(self) -> None:
-        message = StationTakenOfflineRequestMessage()
+    def sendServiceNotReady(self) -> None:
+        message = ServiceNotReadyMessage()
+        self._client.sendTextMessage(message.to_json())
+
+    def sendServiceStarted(self) -> None:
+        message = ServiceStartedMessage()
+        self._client.sendTextMessage(message.to_json())
+
+    def sendServiceEnded(self) -> None:
+        message = ServiceEndedMessage()
         self._client.sendTextMessage(message.to_json())
 
     def sendFuelPriceDataAsk(self) -> None:
         message = FuelPriceDataAskMessage()
         self._client.sendTextMessage(message.to_json())
 
-    def sendLoyaltyCardAsk(self, message: LoyaltyCardAskMessage) -> None:
+    def sendLoyaltyCardAsk(self, car_number: CarNumber) -> None:
+        message = LoyaltyCardAskMessage(car_number)
         self._client.sendTextMessage(message.to_json())
 
-    def sendPaymentSent(self, message: PaymentSentMessage) -> None:
+    def sendSavePayment(self, message: SavePaymentMessage) -> None:
         self._client.sendTextMessage(message.to_json())
 
     @Slot()
@@ -75,24 +83,22 @@ class CentralServerWsClient(QObject):
         match (message_type):
             case MessageType.CONNECTED:
                 self.connected.emit()
-            case MessageType.STATION_NOT_TAKEN:
-                self.stationNotTaken.emit()
-            case MessageType.STATION_TAKEN_OFFLINE:
-                self.stationTakenOffline.emit()
             case MessageType.FUEL_PRICE_DATA_SENT:
                 message = FuelPriceDataSentMessage.from_json(json_str)
                 self.fuelPriceDataSent.emit(message)
             case MessageType.LOYALTY_CARD_SENT:
                 message = LoyaltyCardSentMessage.from_json(json_str)
                 self.loyaltyCardSent.emit(message)
-            case MessageType.PAYMENT_RECEIVED:
-                self.paymentReceived.emit()
+            case MessageType.GAS_NOZZLE_USED_T2:
+                self.gasNozzleUsedT2.emit()
+            case MessageType.MOBILE_APP_USED_T1:
+                self.mobileAppUsedT1.emit()
 
     @Slot()
     def onConnected(self) -> None:
         print(
             f'CENTRAL SERVER CLIENT | connected on {self._client.localAddress().toString()}:{self._client.localPort()}')
-        self._sendConnectRequest()
+        self._sendConnect()
 
     @Slot()
     def onDisconnected(self) -> None:

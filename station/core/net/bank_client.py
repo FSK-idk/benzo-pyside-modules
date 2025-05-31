@@ -1,13 +1,13 @@
 from PySide6.QtCore import QObject, QUrl, Signal
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
 
-from core.model.bank_http_api import *
+from core.model.bank_api import *
 
 from core.util import get_bank_host, get_bank_port
 
 
-class BankHttpClient(QObject):
-    payResponse: Signal = Signal(PayResponse)
+class BankClient(QObject):
+    paymentSuccess: Signal = Signal(PayResponse)
     payError: Signal = Signal()
 
     def __init__(self, parent: QObject | None = None) -> None:
@@ -32,6 +32,6 @@ class BankHttpClient(QObject):
 
         if error == QNetworkReply.NetworkError.NoError:
             deposit_cards_response = PayResponse.from_json(reply.readAll().toStdString())
-            self.payResponse.emit(deposit_cards_response)
+            self.paymentSuccess.emit(deposit_cards_response)
         else:
             self.payError.emit()

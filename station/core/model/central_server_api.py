@@ -9,24 +9,24 @@ from core.model.fuel_price_data import FuelPriceData
 
 
 class MessageType(Enum):
-    CONNECT_REQUEST = 'connect_request'
+    CONNECT = 'connect'
     CONNECTED = 'connected'
-
-    STATION_NOT_TAKEN_REQUEST = 'station_not_taken_request'
-    STATION_NOT_TAKEN = 'station_not_taken'
-    STATION_TAKEN_OFFLINE_REQUEST = 'station_taken_offline_request'
-    STATION_TAKEN_OFFLINE = 'station_taken_offline'
+    SERVICE_READY = 'service_ready'
+    SERVICE_NOT_READY = 'service_not_ready'
+    SERVICE_STARTED = 'service_started'
+    SERVICE_ENDED = 'service_ended'
     FUEL_PRICE_DATA_ASK = 'fuel_price_data_ask'
     FUEL_PRICE_DATA_SENT = 'fuel_price_data_sent'
     LOYALTY_CARD_ASK = 'loyalty_card_ask'
     LOYALTY_CARD_SENT = 'loyalty_card_sent'
-    PAYMENT_SENT = 'payment_sent'
-    PAYMENT_RECEIVED = 'payment_received'
+    SAVE_PAYMENT = 'save_payment'
+    GAS_NOZZLE_USED_T2 = 'gas_nozzle_used_t2'
+    MOBILE_APP_USED_T1 = 'mobile_app_used_t1'
 
 
 @dataclass
-class ConnectRequestMessage:
-    message_type: ClassVar[MessageType] = MessageType.CONNECT_REQUEST
+class ConnectMessage:
+    message_type: ClassVar[MessageType] = MessageType.CONNECT
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -71,8 +71,8 @@ class ConnectedMessage:
 
 
 @dataclass
-class StationNotTakenRequestMessage:
-    message_type: ClassVar[MessageType] = MessageType.STATION_NOT_TAKEN_REQUEST
+class ServiceReadyMessage:
+    message_type: ClassVar[MessageType] = MessageType.SERVICE_READY
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -94,8 +94,8 @@ class StationNotTakenRequestMessage:
 
 
 @dataclass
-class StationNotTakenMessage:
-    message_type: ClassVar[MessageType] = MessageType.STATION_NOT_TAKEN
+class ServiceNotReadyMessage:
+    message_type: ClassVar[MessageType] = MessageType.SERVICE_NOT_READY
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -117,8 +117,8 @@ class StationNotTakenMessage:
 
 
 @dataclass
-class StationTakenOfflineRequestMessage:
-    message_type: ClassVar[MessageType] = MessageType.STATION_TAKEN_OFFLINE_REQUEST
+class ServiceStartedMessage:
+    message_type: ClassVar[MessageType] = MessageType.SERVICE_STARTED
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -140,8 +140,8 @@ class StationTakenOfflineRequestMessage:
 
 
 @dataclass
-class StationTakenOfflineMessage:
-    message_type: ClassVar[MessageType] = MessageType.STATION_TAKEN_OFFLINE
+class ServiceEndedMessage:
+    message_type: ClassVar[MessageType] = MessageType.SERVICE_ENDED
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
@@ -293,8 +293,8 @@ class LoyaltyCardSentMessage:
 
 
 @dataclass
-class PaymentSentMessage:
-    message_type: ClassVar[MessageType] = MessageType.PAYMENT_SENT
+class SavePaymentMessage:
+    message_type: ClassVar[MessageType] = MessageType.SAVE_PAYMENT
     fuel_type: FuelType
     fuel_amount: int
     car_number: CarNumber
@@ -335,8 +335,8 @@ class PaymentSentMessage:
 
 
 @dataclass
-class PaymentReceivedMessage:
-    message_type: ClassVar[MessageType] = MessageType.PAYMENT_RECEIVED
+class MobileAppUsedT1Message:
+    message_type: ClassVar[MessageType] = MessageType.MOBILE_APP_USED_T1
 
     @classmethod
     def from_dict(cls, data_dict: dict) -> Self:
