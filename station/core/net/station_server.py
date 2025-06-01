@@ -131,7 +131,7 @@ class StationServer(QObject):
                     match message.sender_type:
                         case SenderType.CAMERA:
                             new_message = ConnectedMessage()
-                            client.sendTextMessage(message.to_json())
+                            client.sendTextMessage(new_message.to_json())
                         case SenderType.GAS_NOZZLE:
                             new_message = ConnectedMessage()
                             client.sendTextMessage(new_message.to_json())
