@@ -16,7 +16,9 @@ class CentralServerClient(QObject):
     fuelPriceDataSent: Signal = Signal(FuelPriceDataSentMessage)
     loyaltyCardSent: Signal = Signal(LoyaltyCardSentMessage)
     gasNozzleUsedT2: Signal = Signal()
+
     mobileAppUsedT1: Signal = Signal()
+    mobileAppServiceEnded: Signal = Signal()
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -89,10 +91,13 @@ class CentralServerClient(QObject):
             case MessageType.LOYALTY_CARD_SENT:
                 message = LoyaltyCardSentMessage.from_json(json_str)
                 self.loyaltyCardSent.emit(message)
-            case MessageType.GAS_NOZZLE_USED_T2:
-                self.gasNozzleUsedT2.emit()
+
+            case MessageType.MOBILE_APP_SERVICE_ENDED:
+                self.mobileAppServiceEnded.emit()
             case MessageType.MOBILE_APP_USED_T1:
                 self.mobileAppUsedT1.emit()
+            case MessageType.GAS_NOZZLE_USED_T2:
+                self.gasNozzleUsedT2.emit()
 
     @Slot()
     def onConnected(self) -> None:

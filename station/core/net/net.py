@@ -39,8 +39,7 @@ class Net(QObject):
         self._station_server.serviceNotReady.connect(self._central_server_client.sendServiceNotReady)
         self._station_server.serviceNotReady.connect(self.componentConnection.emit)
 
-        self._central_server_client.disconnected.connect(self.centralServerDisconnected.emit)
-        self._central_server_client.disconnected.connect(self._station_server.stop)
+        self._central_server_client.disconnected.connect(self.onCentralServerDisonnected)
 
         self._station_server.serviceReady.connect(self._central_server_client.sendServiceReady)
         self._station_server.serviceReady.connect(self.reset.emit)
@@ -65,11 +64,17 @@ class Net(QObject):
 
         self._station_server.mobileAppUsedT2.connect(self.mobileAppUsed.emit)
 
-        self._central_server_client.mobileAppUsedT1.connect(self.mobileAppUsed.emit)
-        self._central_server_client.mobileAppUsedT1.connect(self._station_server.sendMobileAppUsedT1)
+        self._central_server_client.mobileAppUsedT1.connect(self.useMobileApp)
+
+        self._central_server_client.mobileAppServiceEnded.connect(self.reset)
+        self._central_server_client.mobileAppServiceEnded.connect(self._station_server.sendServiceEnded)
 
     def connectCentralServer(self) -> None:
         self._central_server_client.start()
+
+    def onCentralServerDisonnected(self) -> None:
+        self._station_server.stop()
+        self.centralServerDisconnected.emit()
 
     def endService(self) -> None:
         self._station_server.sendServiceEnded()
@@ -107,3 +112,7 @@ class Net(QObject):
 
     def savePayment(self, message: central_server_api.SavePaymentMessage) -> None:
         self._central_server_client.sendSavePayment(message)
+
+    def useMobileApp(self) -> None:
+        self.mobileAppUsed.emit()
+        self._station_server.sendMobileAppUsedT1()
