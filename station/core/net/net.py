@@ -62,7 +62,8 @@ class Net(QObject):
         self._central_server_client.gasNozzleUsedT2.connect(self.gasNozzleUsed.emit)
         self._central_server_client.gasNozzleUsedT2.connect(self._station_server.sendGasNozzleUsedT2)
 
-        self._station_server.mobileAppUsedT2.connect(self.mobileAppUsed.emit)
+        self._station_server.mobileAppUsedT2.connect(self.useMobileApp)
+        self._station_server.mobileAppUsedT2.connect(self._central_server_client.sendMobileAppUsedT2)
 
         self._central_server_client.mobileAppUsedT1.connect(self.useMobileApp)
 

@@ -76,6 +76,10 @@ class CentralServerClient(QObject):
     def sendSavePayment(self, message: SavePaymentMessage) -> None:
         self._client.sendTextMessage(message.to_json())
 
+    def sendMobileAppUsedT2(self) -> None:
+        message = MobileAppUsedT2Message()
+        self._client.sendTextMessage(message.to_json())
+
     @Slot()
     def onTextMessageReceived(self, json_str: str) -> None:
         print(f'CENTRAL SERVER CLIENT | message received: {json_str}')
